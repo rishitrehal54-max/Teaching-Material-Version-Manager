@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="CSE326: Web Development - Classroom Resource Sharing Portal for lecture notes, code templates, tutorials, and study materials.">
+    <title>CSE326: Web Development - Resource Sharing Portal</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231d4ed8'/%3E%3Cpath fill='%23ffffff' d='M32 14L8 26l24 12 19.6-9.8V42h4.4V26L32 14zm-14 21v9.5c0 4.2 6.3 7.5 14 7.5s14-3.3 14-7.5V35L32 42l-14-7z'/%3E%3C/svg%3E">
+    <!-- Restore Theme Before Render -->
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem('cse326_portal_theme') === 'dark') {
+                    document.documentElement.classList.add('dark');
+                }
+            } catch (e) { /* ignore storage errors */ }
+        })();
+    </script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            400: '#60a5fa',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            800: '#1e3a8a',
+                            900: '#172554',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200 flex flex-col">
+
+    <!-- Header Navigation -->
+    <header
+        class="sticky top-0 z-30 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-3">
+
+                <!-- Logo & Course Info -->
+                <div class="flex items-center gap-3 shrink-0">
+                    <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-md shadow-brand-500/20">
+                        <i class="fa-solid fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-base sm:text-lg leading-tight text-slate-900 dark:text-white">CSE326:
+                            Web Development</h1>
+                        <p class="text-xs text-brand-600 dark:text-brand-400 font-medium hidden sm:block">Classroom
+                            Resource Sharing Portal</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav
+                    class="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-slate-700/60 p-1 rounded-xl text-xs font-semibold">
+                    <button id="navBrowse" type="button" onclick="switchTab('browse')"
+                        class="nav-tab px-3.5 py-1.5 rounded-lg transition-all bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm">
+                        <i class="fa-solid fa-border-all mr-1.5"></i> Browse
+                    </button>
+                    <button id="navAdd" type="button" onclick="switchTab('add')"
+                        class="nav-tab px-3.5 py-1.5 rounded-lg transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                        <i class="fa-solid fa-cloud-arrow-up mr-1.5"></i> Add Resource
+                    </button>
+                    <button id="navBookmarks" type="button" onclick="switchTab('bookmarks')"
+                        class="nav-tab px-3.5 py-1.5 rounded-lg transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white">
+                        <i class="fa-solid fa-bookmark mr-1.5"></i> Bookmarks (<span id="navBookmarkCount">0</span>)
+                    </button>
+                    <button id="navModeration" type="button" onclick="switchTab('moderation')"
+                        class="nav-tab px-3.5 py-1.5 rounded-lg transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative">
+                        <i class="fa-solid fa-shield-halved mr-1.5"></i> Moderation
+                        <span id="navPendingBadge"
+                            class="hidden absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] w-4 h-4 rounded-full items-center justify-center font-bold">0</span>
+                    </button>
+                </nav>
+
+                <!-- Actions & User Role Switcher -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- User Role Toggle -->
+                    <div class="flex items-center bg-slate-100 dark:bg-slate-700/60 p-1 rounded-xl text-xs">
+                        <button id="roleStudentBtn" type="button" onclick="setUserRole('Student')"
+                            class="px-2.5 py-1 rounded-lg font-medium transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm">
+                            <i class="fa-solid fa-user-graduate mr-1"></i> Student
+                        </button>
+                        <button id="roleFacultyBtn" type="button" onclick="setUserRole('Faculty')"
+                            class="px-2.5 py-1 rounded-lg font-medium transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white">
+                            <i class="fa-solid fa-chalkboard-user mr-1"></i> Faculty
+                        </button>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="themeToggleBtn" type="button" onclick="toggleTheme()" title="Toggle Dark/Light Theme"
+                        aria-label="Toggle Dark/Light Theme"
+                        class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition">
+                        <i class="fa-solid fa-moon dark:hidden"></i>
+                        <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Nav Links -->
+            <div
+                class="flex md:hidden items-center justify-around py-2 border-t border-slate-200/80 dark:border-slate-700/80 text-xs font-medium">
+                <button id="mobileNavBrowse" type="button" onclick="switchTab('browse')"
+                    class="mobile-nav-tab py-1 px-2 text-brand-600 dark:text-brand-400 font-semibold"><i
+                        class="fa-solid fa-border-all"></i> Browse</button>
+                <button id="mobileNavAdd" type="button" onclick="switchTab('add')"
+                    class="mobile-nav-tab py-1 px-2 text-slate-600 dark:text-slate-300"><i
+                        class="fa-solid fa-plus"></i> Share</button>
+                <button id="mobileNavBookmarks" type="button" onclick="switchTab('bookmarks')"
+                    class="mobile-nav-tab py-1 px-2 text-slate-600 dark:text-slate-300"><i
+                        class="fa-solid fa-bookmark"></i> Saved (<span id="mobileBookmarkCount">0</span>)</button>
+                <button id="mobileNavModeration" type="button" onclick="switchTab('moderation')"
+                    class="mobile-nav-tab py-1 px-2 text-slate-600 dark:text-slate-300 relative"><i
+                        class="fa-solid fa-shield"></i> Mod Queue
+                    <span id="mobilePendingBadge"
+                        class="hidden ml-1 bg-rose-500 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full">
+
+        <!-- ================= BROWSE TAB ================= -->
+        <section id="tabContentBrowse" class="tab-page">
+            <!-- Hero Banner -->
+            <div
+                class="bg-gradient-to-r from-brand-700 via-brand-800 to-slate-900 rounded-2xl p-6 mb-6 text-white shadow-lg relative overflow-hidden">
+                <div class="absolute -right-8 -bottom-8 opacity-10 text-white pointer-events-none">
+                    <i class="fa-solid fa-code text-9xl"></i>
+                </div>
+                <div class="relative z-10 max-w-2xl">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-xs font-medium mb-3 border border-white/10">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> CSE326 Academic Hub
+                        Active
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-bold tracking-tight mb-2">Classroom Knowledge & Resource Vault
+                    </h2>
+                    <p class="text-brand-100 text-sm leading-relaxed">Centralized access to lecture notes, code
+                        templates, lab manuals, async tutorials, and starter kits shared by CSE326 faculty and students.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Search Bar & Filters -->
+            <div
+                class="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200/80 dark:border-slate-700 mb-6 space-y-4">
+                <!-- Search Input -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                    </div>
+                    <input type="text" id="searchInput" oninput="handleSearch()"
+                        placeholder="Search by title, description, keywords, or author..."
+                        class="w-full pl-10 pr-10 py-2.5 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white dark:focus:bg-slate-800 transition">
+                    <button id="clearSearchBtn" type="button" onclick="clearSearch()"
+                        aria-label="Clear search"
+                        class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                        <i class="fa-solid fa-circle-xmark text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Dropdown & Pills Filter Row -->
+                <div class="flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+                    <!-- Category Dropdown -->
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium text-slate-500 dark:text-slate-400 shrink-0">Type:</span>
+                        <select id="typeFilter" onchange="renderResources()"
+                            class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="ALL">All Types</option>
+                            <option value="Notes">Notes</option>
+                            <option value="Code Template">Code Template</option>
+                            <option value="PDF">PDF Document</option>
+                            <option value="Link">Web Link</option>
+                            <option value="Presentation">Presentation</option>
+                            <option value="Video">Video Tutorial</option>
+                        </select>
+                    </div>
+
+                    <!-- Sort Dropdown -->
+                    <div class="flex items-center gap-2">
+                        <span class="font-medium text-slate-500 dark:text-slate-400 shrink-0">Sort By:</span>
+                        <select id="sortFilter" onchange="renderResources()"
+                            class="bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500">
+                            <option value="popular">Most Popular (Downloads)</option>
+                            <option value="newest">Newest First</option>
+                            <option value="rating">Highest Rated</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Course Tag Filter Pills -->
+                <div
+                    class="flex items-center gap-1.5 overflow-x-auto pb-1 pt-2 border-t border-slate-100 dark:border-slate-700 custom-scrollbar text-xs">
+                    <span class="text-slate-400 font-medium shrink-0 mr-1">Tags:</span>
+                    <button id="tagAllBtn" type="button"
+                        class="tag-chip active-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-brand-600 text-white"
+                        onclick="filterTag('ALL', this)">All</button>
+                    <button type="button"
+                        class="tag-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                        onclick="filterTag('HTML5', this)">HTML5</button>
+                    <button type="button"
+                        class="tag-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                        onclick="filterTag('CSS3', this)">CSS3</button>
+                    <button type="button"
+                        class="tag-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                        onclick="filterTag('JavaScript', this)">JavaScript</button>
+                    <button type="button"
+                        class="tag-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                        onclick="filterTag('DOM Manipulation', this)">DOM Manipulation</button>
+                    <button type="button"
+                        class="tag-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                        onclick="filterTag('React', this)">React</button>
+                    <button type="button"
+                        class="tag-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                        onclick="filterTag('Node.js', this)">Node.js</button>
+                </div>
+            </div>
+
+            <!-- Resource Cards Grid -->
+            <div id="resourceGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Items Inserted via JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden flex-col items-center justify-center py-16 text-center">
+                <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-full mb-3 text-slate-400">
+                    <i class="fa-solid fa-folder-open text-4xl"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-700 dark:text-slate-300">No resources found</h3>
+                <p class="text-slate-500 text-xs max-w-sm mt-1 mb-4">Try clearing filters or search terms to view
+                    available classroom resources.</p>
+                <button type="button" onclick="resetFilters()"
+                    class="text-xs bg-brand-600 text-white px-4 py-2 rounded-xl hover:bg-brand-700 font-medium">Reset
+                    Filters</button>
+            </div>
+        </section>
+
+        <!-- ================= ADD RESOURCE TAB ================= -->
+        <section id="tabContentAdd" class="tab-page hidden max-w-2xl mx-auto">
+            <div
+                class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-200/80 dark:border-slate-700">
+                <div class="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100 dark:border-slate-700">
+                    <div class="bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 p-3 rounded-xl">
+                        <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 dark:text-white">Share Academic Resource</h2>
+                        <p class="text-xs text-slate-500">Upload notes, templates, tutorials, or study materials for
+                            CSE326 peers.</p>
+                    </div>
+                </div>
+
+                <form id="uploadForm" onsubmit="handleResourceSubmit(event)" class="space-y-4 text-xs sm:text-sm">
+                    <div>
+                        <label for="formTitle" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Resource Title
+                            *</label>
+                        <input type="text" id="formTitle" required
+                            placeholder="e.g. CSE326 Unit 3 Flexbox & Grid Master Cheatsheet"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="formType" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Resource Type
+                                *</label>
+                            <select id="formType" required
+                                class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="Notes">Notes</option>
+                                <option value="Code Template">Code Template</option>
+                                <option value="PDF">PDF Document</option>
+                                <option value="Link">Web Link</option>
+                                <option value="Presentation">Presentation</option>
+                                <option value="Video">Video Tutorial</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="formTags" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Course Tags *
+                                (Hold Ctrl/Cmd for multiple)</label>
+                            <select id="formTags" multiple required
+                                class="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 h-24">
+                                <option value="HTML5">HTML5</option>
+                                <option value="CSS3">CSS3</option>
+                                <option value="JavaScript">JavaScript</option>
+                                <option value="DOM Manipulation">DOM Manipulation</option>
+                                <option value="React">React</option>
+                                <option value="Node.js">Node.js</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="formUrl" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Resource / Link URL
+                            *</label>
+                        <input type="url" id="formUrl" required
+                            placeholder="https://github.com/user/repo or Google Drive Link"
+                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="formAuthor" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Author Name
+                                *</label>
+                            <input type="text" id="formAuthor" required
+                                placeholder="e.g. Dr. Ramesh Kumar / Ananya Sharma"
+                                class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        </div>
+                        <div>
+                            <label for="formRole" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Author Role
+                                *</label>
+                            <select id="formRole" required
+                                class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="Student">Student</option>
+                                <option value="Faculty">Faculty</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="formDesc" class="block font-semibold text-slate-700 dark:text-slate-300 mb-1">Detailed Description
+                            *</label>
+                        <textarea id="formDesc" rows="4" required
+                            placeholder="Provide a summary of concepts covered, prerequisites, and instructions..."
+                            class="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button type="button" onclick="switchTab('browse')"
+                            class="px-5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 font-medium">Cancel</button>
+                        <button type="submit"
+                            class="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-medium shadow-md shadow-brand-500/20">Submit
+                            Resource</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- ================= BOOKMARKS TAB ================= -->
+        <section id="tabContentBookmarks" class="tab-page hidden">
+            <div class="mb-6 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900 dark:text-white">My Saved Bookmarks</h2>
+                    <p class="text-xs text-slate-500">Quick access to resources you've saved for revision.</p>
+                </div>
+            </div>
+
+            <div id="bookmarkGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic Items Inserted via JS -->
+            </div>
+
+            <div id="bookmarkEmptyState" class="hidden flex-col items-center justify-center py-16 text-center">
+                <div class="bg-slate-100 dark:bg-slate-800 p-4 rounded-full mb-3 text-slate-400">
+                    <i class="fa-regular fa-bookmark text-4xl"></i>
+                </div>
+                <h3 class="text-base font-semibold text-slate-700 dark:text-slate-300">No saved bookmarks yet</h3>
+                <p class="text-slate-500 text-xs max-w-sm mt-1 mb-4">Click the bookmark icon on any resource card to
+                    save it here for offline reference.</p>
+                <button type="button" onclick="switchTab('browse')"
+                    class="text-xs bg-brand-600 text-white px-4 py-2 rounded-xl hover:bg-brand-700 font-medium">Browse
+                    Resources</button>
+            </div>
+        </section>
+
+        <!-- ================= MODERATION QUEUE TAB ================= -->
+        <section id="tabContentModeration" class="tab-page hidden">
+            <div
+                class="mb-6 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-amber-500 text-white p-2.5 rounded-xl">
+                        <i class="fa-solid fa-shield-halved text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-sm text-amber-900 dark:text-amber-200">Moderation Control Center</h3>
+                        <p class="text-xs text-amber-700 dark:text-amber-400">Manage student submissions, verify
+                            academic quality, and address reported issues.</p>
+                    </div>
+                </div>
+                <div
+                    class="text-xs font-semibold px-3 py-1 rounded-lg bg-amber-200/60 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200">
+                    Role: <span id="modCurrentRole">Student Mode (View Only)</span>
+                </div>
+            </div>
+
+            <!-- Pending Approval Section -->
+            <div class="mb-8">
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-clock text-amber-500"></i> Pending Approvals Queue
+                </h3>
+                <div id="pendingGrid" class="space-y-3">
+                    <!-- Dynamic Pending List -->
+                </div>
+            </div>
+
+            <!-- Reported Resources Section -->
+            <div>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Flagged / Reported Items
+                </h3>
+                <div id="flaggedGrid" class="space-y-3">
+                    <!-- Dynamic Flagged List -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal: Preview Metadata & Reviews -->
+    <div id="previewModal" onclick="if (event.target === this) closeModal('previewModal')"
+        class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-200">
+        <div
+            class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 dark:border-slate-700 max-h-[90vh] flex flex-col transform scale-95 transition-transform duration-200">
+
+            <!-- Modal Header -->
+            <div class="flex items-start justify-between pb-4 border-b border-slate-200 dark:border-slate-700">
+                <div class="flex items-center gap-3">
+                    <div id="modalTypeIcon"
+                        class="w-12 h-12 rounded-xl bg-brand-50 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xl shrink-0">
+                        <i class="fa-solid fa-file-pdf"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span id="modalTypeBadge"
+                                class="text-[11px] font-bold px-2 py-0.5 rounded bg-brand-100 dark:bg-brand-900 text-brand-700 dark:text-brand-300">PDF</span>
+                            <span id="modalAuthorBadge"
+                                class="text-[11px] font-medium px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">Faculty</span>
+                            <span id="modalFacultyVerified"
+                                class="hidden text-[11px] font-semibold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border border-emerald-300 dark:border-emerald-800">
+                                <i class="fa-solid fa-check-circle mr-1"></i> Verified
+                            </span>
+                        </div>
+                        <h2 id="modalTitle" class="text-lg font-bold text-slate-900 dark:text-white leading-snug">Title
+                        </h2>
+                    </div>
+                </div>
+                <button type="button" onclick="closeModal('previewModal')" aria-label="Close modal"
+                    class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg p-1">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content (Scrollable) -->
+            <div class="overflow-y-auto custom-scrollbar my-4 space-y-4 pr-1 text-xs sm:text-sm">
+                <!-- Metadata Grid -->
+                <div class="grid grid-cols-3 gap-2 p-3 bg-slate-50 dark:bg-slate-700/40 rounded-xl text-center">
+                    <div>
+                        <span class="text-slate-400 text-[10px] uppercase block mb-0.5 font-semibold">Author</span>
+                        <span id="modalAuthor" class="font-semibold text-slate-700 dark:text-slate-200">Name</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 text-[10px] uppercase block mb-0.5 font-semibold">Rating</span>
+                        <span id="modalRating" class="font-semibold text-amber-500">★ 4.8</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 text-[10px] uppercase block mb-0.5 font-semibold">Downloads</span>
+                        <span id="modalDownloads" class="font-semibold text-slate-700 dark:text-slate-200">0</span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h4 class="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-1">Description</h4>
+                    <p id="modalDesc" class="text-slate-600 dark:text-slate-300 leading-relaxed"></p>
+                </div>
+
+                <!-- Tags -->
+                <div>
+                    <h4 class="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-1.5">Course Tags</h4>
+                    <div id="modalTags" class="flex flex-wrap gap-1.5"></div>
+                </div>
+
+                <!-- Interactive Rating Box -->
+                <div
+                    class="p-3.5 bg-brand-50/50 dark:bg-slate-700/30 rounded-xl border border-brand-100 dark:border-slate-700">
+                    <h4 class="text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Rate this Academic
+                        Resource</h4>
+                    <div id="interactiveStars"
+                        class="flex items-center gap-1 text-xl text-slate-300 dark:text-slate-600 cursor-pointer">
+                        <i class="fa-solid fa-star hover:text-amber-400 transition" data-star="1" onclick="rateResource(1)"></i>
+                        <i class="fa-solid fa-star hover:text-amber-400 transition" data-star="2" onclick="rateResource(2)"></i>
+                        <i class="fa-solid fa-star hover:text-amber-400 transition" data-star="3" onclick="rateResource(3)"></i>
+                        <i class="fa-solid fa-star hover:text-amber-400 transition" data-star="4" onclick="rateResource(4)"></i>
+                        <i class="fa-solid fa-star hover:text-amber-400 transition" data-star="5" onclick="rateResource(5)"></i>
+                        <span id="userRatingHint" class="text-xs text-slate-500 ml-2">(Click to rate)</span>
+                    </div>
+                </div>
+
+                <!-- Discussion & Reviews Section -->
+                <div>
+                    <h4 class="text-xs font-semibold uppercase text-slate-400 tracking-wider mb-2">Comments & Reviews
+                        (<span id="modalCommentCount">0</span>)</h4>
+
+                    <!-- Comment Input -->
+                    <div class="flex gap-2 mb-3">
+                        <input type="text" id="modalCommentInput" placeholder="Add a question or review note..."
+                            onkeydown="if (event.key === 'Enter') { event.preventDefault(); postComment(); }"
+                            class="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-700/60 border border-slate-200 dark:border-slate-600 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button type="button" onclick="postComment()"
+                            class="bg-brand-600 text-white px-3.5 py-2 rounded-xl text-xs font-semibold hover:bg-brand-700">Post</button>
+                    </div>
+
+                    <!-- Comments Feed -->
+                    <div id="modalCommentsFeed" class="space-y-2">
+                        <!-- Dynamic Comments -->
+                    </div>
+                </div>
+
+                <!-- Report Section -->
+                <div
+                    class="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-700 text-xs">
+                    <button type="button" onclick="flagCurrentResource()"
+                        class="text-rose-500 hover:text-rose-700 flex items-center gap-1 font-medium">
+                        <i class="fa-regular fa-flag"></i> Flag incorrect or inappropriate content
+                    </button>
+                    <span id="modalFlags" class="text-slate-400"></span>
+                </div>
+            </div>
+
+            <!-- Modal Footer Actions -->
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
+                <button id="modalBookmarkBtn" type="button" onclick="toggleModalBookmark()"
+                    class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 text-xs font-semibold flex items-center gap-1.5">
+                    <i class="fa-regular fa-bookmark"></i> Bookmark
+                </button>
+                <a id="modalDownloadBtn" href="#" target="_blank" rel="noopener noreferrer" onclick="incrementDownload()"
+                    class="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-semibold text-xs px-5 py-2.5 rounded-xl shadow-md shadow-brand-500/20 text-center flex items-center justify-center gap-2 transition">
+                    <i class="fa-solid fa-arrow-down-long"></i> Download / Access Resource
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast"
+        class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white dark:bg-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none text-xs font-semibold">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 dark:text-emerald-600 text-base"></i>
+        <span id="toastMsg">Action completed successfully</span>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Pre-populated CSE326 Academic Resources
+        const sampleResources = [
+            {
+                id: 'res-1',
+                title: 'DOM Manipulation Cheat Sheet & Event Reference',
+                type: 'PDF',
+                tags: ['JavaScript', 'DOM Manipulation', 'HTML5'],
+                url: 'https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model',
+                author: 'Dr. Ramesh Kumar',
+                role: 'Faculty',
+                description: 'Comprehensive cheat sheet detailing document methods, event handling syntax, querySelectors, dynamic element creation, and event delegation tricks for CSE326 lab evaluation.',
+                rating: 4.9,
+                ratingCount: 38,
+                downloads: 410,
+                status: 'Approved',
+                flags: 0,
+                comments: [
+                    { author: 'Rahul S.', role: 'Student', text: 'Extremely helpful for the mid-term practicals!' }
+                ],
+                createdAt: '2026-09-02T10:00:00Z'
+            },
+            {
+                id: 'res-2',
+                title: 'Responsive CSS Grid & Flexbox Layout Starters',
+                type: 'Code Template',
+                tags: ['CSS3', 'HTML5'],
+                url: 'https://github.com',
+                author: 'Ananya Sharma',
+                role: 'Student',
+                description: 'Ready-to-use clean HTML/CSS code templates demonstrating fluid multi-column layouts, mobile menu drawers, and responsive breakpoint setups.',
+                rating: 4.7,
+                ratingCount: 19,
+                downloads: 230,
+                status: 'Approved',
+                flags: 0,
+                comments: [],
+                createdAt: '2026-09-10T12:30:00Z'
+            },
+            {
+                id: 'res-3',
+                title: 'JavaScript Async/Await & Fetch API Video Tutorial',
+                type: 'Video',
+                tags: ['JavaScript', 'Node.js'],
+                url: 'https://youtube.com',
+                author: 'Prof. S. R. Mehta',
+                role: 'Faculty',
+                description: '45-minute structured video breakdown explaining asynchronous JS execution, Promises, Async/Await syntax, and connecting to RESTful endpoints.',
+                rating: 5.0,
+                ratingCount: 64,
+                downloads: 580,
+                status: 'Approved',
+                flags: 0,
+                comments: [
+                    { author: 'Vikram P.', role: 'Student', text: 'Cleared all my doubts on Promise chaining.' }
+                ],
+                createdAt: '2026-09-14T08:15:00Z'
+            },
+            {
+                id: 'res-4',
+                title: 'Express.js REST API Starter Kit Boilerplate',
+                type: 'Code Template',
+                tags: ['Node.js', 'JavaScript'],
+                url: 'https://expressjs.com',
+                author: 'Karan Patel',
+                role: 'Student',
+                description: 'Modular Node.js backend template including basic Express router setup, CORS configuration, JSON body parsing middleware, and sample endpoints.',
+                rating: 4.5,
+                ratingCount: 14,
+                downloads: 175,
+                status: 'Approved',
+                flags: 0,
+                comments: [],
+                createdAt: '2026-09-18T16:00:00Z'
+            },
+            {
+                id: 'res-5',
+                title: 'React Fundamentals Slides & Component Lifecycle Guide',
+                type: 'Presentation',
+                tags: ['React', 'JavaScript'],
+                url: 'https://react.dev',
+                author: 'Dr. Ramesh Kumar',
+                role: 'Faculty',
+                description: 'Official lecture slide deck covering React virtual DOM, JSX, Props vs State, useEffect hooks, and component composition pattern.',
+                rating: 4.8,
+                ratingCount: 29,
+                downloads: 320,
+                status: 'Approved',
+                flags: 0,
+                comments: [],
+                createdAt: '2026-09-22T11:45:00Z'
+            },
+            {
+                id: 'res-6',
+                title: 'Student Project: Interactive Quiz Web App Submission',
+                type: 'Link',
+                tags: ['HTML5', 'CSS3', 'JavaScript'],
+                url: 'https://github.com',
+                author: 'Simran Kaur',
+                role: 'Student',
+                description: 'Submitted student project for CA-2 showcasing dynamic quiz generation, localStorage score tracking, and smooth CSS transitions.',
+                rating: 4.2,
+                ratingCount: 6,
+                downloads: 85,
+                status: 'Pending',
+                flags: 0,
+                comments: [],
+                createdAt: '2026-10-01T14:20:00Z'
+            }
+        ];
+
+        // Storage & Security Helpers
+        function safeReadJson(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return fallback;
+                const parsed = JSON.parse(raw);
+                return parsed ?? fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function safeGetString(key, fallback) {
+            try {
+                return localStorage.getItem(key) || fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function sanitizeUrl(url) {
+            try {
+                const parsed = new URL(String(url ?? '').trim());
+                if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                    return parsed.href;
+                }
+            } catch (e) { /* invalid url */ }
+            return '#';
+        }
+
+        // Global State Variables
+        let resources = safeReadJson('cse326_portal_resources', null);
+        if (!Array.isArray(resources)) {
+            resources = JSON.parse(JSON.stringify(sampleResources));
+        }
+        let bookmarks = safeReadJson('cse326_portal_bookmarks', []);
+        if (!Array.isArray(bookmarks)) bookmarks = [];
+        let userRatings = safeReadJson('cse326_portal_user_ratings', {});
+        if (!userRatings || typeof userRatings !== 'object' || Array.isArray(userRatings)) userRatings = {};
+        let currentUserRole = safeGetString('cse326_portal_role', 'Student');
+        if (currentUserRole !== 'Student' && currentUserRole !== 'Faculty') currentUserRole = 'Student';
+
+        let currentTab = 'browse';
+        let selectedTag = 'ALL';
+        let activeModalResId = null;
+        let toastTimeout = null;
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            setUserRole(currentUserRole, true);
+            updateBookmarkBadge();
+            updatePendingBadge();
+            renderResources();
+            renderBookmarks();
+            renderModerationQueue();
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('previewModal');
+                    if (modal && !modal.classList.contains('hidden')) {
+                        closeModal('previewModal');
+                    }
+                }
+            });
+        });
+
+        // Theme Toggle Functionality
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            try {
+                localStorage.setItem('cse326_portal_theme', isDark ? 'dark' : 'light');
+            } catch (e) { /* ignore storage errors */ }
+        }
+
+        // State Save Helper
+        function saveState() {
+            try {
+                localStorage.setItem('cse326_portal_resources', JSON.stringify(resources));
+                localStorage.setItem('cse326_portal_bookmarks', JSON.stringify(bookmarks));
+                localStorage.setItem('cse326_portal_user_ratings', JSON.stringify(userRatings));
+                localStorage.setItem('cse326_portal_role', currentUserRole);
+            } catch (e) { /* ignore storage errors */ }
+            updateBookmarkBadge();
+            updatePendingBadge();
+        }
+
+        // Navigation Tabs
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.tab-page').forEach(page => page.classList.add('hidden'));
+
+            // Un-highlight desktop nav tabs
+            document.querySelectorAll('.nav-tab').forEach(btn => {
+                btn.className = 'nav-tab px-3.5 py-1.5 rounded-lg transition-all text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white relative';
+            });
+
+            // Un-highlight mobile nav tabs
+            document.querySelectorAll('.mobile-nav-tab').forEach(btn => {
+                btn.className = 'mobile-nav-tab py-1 px-2 text-slate-600 dark:text-slate-300 relative';
+            });
+
+            const activeDesktopClass = 'nav-tab px-3.5 py-1.5 rounded-lg transition-all bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm relative';
+            const activeMobileClass = 'mobile-nav-tab py-1 px-2 text-brand-600 dark:text-brand-400 font-semibold relative';
+
+            if (tabName === 'browse') {
+                document.getElementById('tabContentBrowse').classList.remove('hidden');
+                document.getElementById('navBrowse').className = activeDesktopClass;
+                document.getElementById('mobileNavBrowse').className = activeMobileClass;
+                renderResources();
+            } else if (tabName === 'add') {
+                document.getElementById('tabContentAdd').classList.remove('hidden');
+                document.getElementById('navAdd').className = activeDesktopClass;
+                document.getElementById('mobileNavAdd').className = activeMobileClass;
+            } else if (tabName === 'bookmarks') {
+                document.getElementById('tabContentBookmarks').classList.remove('hidden');
+                document.getElementById('navBookmarks').className = activeDesktopClass;
+                document.getElementById('mobileNavBookmarks').className = activeMobileClass;
+                renderBookmarks();
+            } else if (tabName === 'moderation') {
+                document.getElementById('tabContentModeration').classList.remove('hidden');
+                document.getElementById('navModeration').className = activeDesktopClass;
+                document.getElementById('mobileNavModeration').className = activeMobileClass;
+                renderModerationQueue();
+            }
+        }
+
+        // Set User Role (Student vs Faculty Mode)
+        function setUserRole(role, silent = false) {
+            currentUserRole = role;
+            const studentBtn = document.getElementById('roleStudentBtn');
+            const facultyBtn = document.getElementById('roleFacultyBtn');
+            const modRoleText = document.getElementById('modCurrentRole');
+
+            if (role === 'Student') {
+                studentBtn.className = 'px-2.5 py-1 rounded-lg font-medium transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm';
+                facultyBtn.className = 'px-2.5 py-1 rounded-lg font-medium transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white';
+                if (modRoleText) modRoleText.innerText = 'Student Mode (View Only)';
+            } else {
+                facultyBtn.className = 'px-2.5 py-1 rounded-lg font-medium transition-all bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm';
+                studentBtn.className = 'px-2.5 py-1 rounded-lg font-medium transition-all text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white';
+                if (modRoleText) modRoleText.innerText = 'Faculty Admin Mode';
+            }
+            saveState();
+            renderModerationQueue();
+            if (!silent) {
+                showToast(`Switched to ${role} Mode`);
+            }
+        }
+
+        // Get Icon helper
+        function getTypeIcon(type) {
+            switch (type) {
+                case 'PDF': return 'fa-file-pdf text-rose-500';
+                case 'Code Template': return 'fa-file-code text-emerald-500';
+                case 'Video': return 'fa-file-video text-purple-500';
+                case 'Presentation': return 'fa-file-powerpoint text-amber-500';
+                case 'Notes': return 'fa-file-lines text-blue-500';
+                default: return 'fa-link text-indigo-500';
+            }
+        }
+
+        // Render Main Resources Grid
+        function renderResources() {
+            const grid = document.getElementById('resourceGrid');
+            const emptyState = document.getElementById('emptyState');
+            grid.innerHTML = '';
+
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const typeVal = document.getElementById('typeFilter').value;
+            const sortVal = document.getElementById('sortFilter').value;
+
+            let list = resources.filter(res => res.status === 'Approved');
+
+            // Search
+            if (searchVal) {
+                list = list.filter(res =>
+                    (res.title || '').toLowerCase().includes(searchVal) ||
+                    (res.description || '').toLowerCase().includes(searchVal) ||
+                    (res.author || '').toLowerCase().includes(searchVal) ||
+                    (Array.isArray(res.tags) && res.tags.some(t => String(t).toLowerCase().includes(searchVal)))
+                );
+            }
+
+            // Type Filter
+            if (typeVal !== 'ALL') {
+                list = list.filter(res => res.type === typeVal);
+            }
+
+            // Tag Filter
+            if (selectedTag !== 'ALL') {
+                list = list.filter(res => Array.isArray(res.tags) && res.tags.includes(selectedTag));
+            }
+
+            // Sorting
+            list.sort((a, b) => {
+                if (sortVal === 'newest') return new Date(b.createdAt) - new Date(a.createdAt);
+                if (sortVal === 'rating') return b.rating - a.rating;
+                return b.downloads - a.downloads; // Default popular
+            });
+
+            if (list.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            list.forEach(res => {
+                grid.appendChild(createResourceCard(res));
+            });
+        }
+
+        // Create Individual Card DOM Element
+        function createResourceCard(res) {
+            const isBookmarked = bookmarks.includes(res.id);
+            const card = document.createElement('div');
+            card.className = 'bg-white dark:bg-slate-800 rounded-2xl p-5 border border-slate-200/80 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col justify-between group';
+
+            const safeId = escapeHtml(res.id);
+            const safeType = escapeHtml(res.type);
+            const safeTitle = escapeHtml(res.title);
+            const safeDesc = escapeHtml(res.description);
+            const safeAuthor = escapeHtml(res.author);
+            const safeRole = escapeHtml(res.role);
+            const safeTags = Array.isArray(res.tags) ? res.tags.map(t => `<span class="text-[10px] bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-md">#${escapeHtml(t)}</span>`).join('') : '';
+
+            card.innerHTML = `
+                <div>
+                    <!-- Header Badges & Bookmark -->
+                    <div class="flex items-start justify-between gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-base shrink-0">
+                                <i class="fa-solid ${getTypeIcon(res.type)}"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] font-bold px-2 py-0.5 rounded bg-brand-50 dark:bg-brand-900/40 text-brand-600 dark:text-brand-300 border border-brand-200/50 dark:border-brand-800/50">${safeType}</span>
+                            </div>
+                        </div>
+                        <button type="button" onclick="toggleBookmark(event, '${safeId}')" title="Save Bookmark" aria-label="Save Bookmark" class="text-slate-400 hover:text-amber-500 transition-colors p-1">
+                            <i class="${isBookmarked ? 'fa-solid text-amber-500' : 'fa-regular'} fa-bookmark text-sm"></i>
+                        </button>
+                    </div>
+
+                    <!-- Title -->
+                    <h3 onclick="openPreviewModal('${safeId}')" class="font-bold text-slate-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer text-sm sm:text-base line-clamp-2 mb-2 leading-snug">
+                        ${safeTitle}
+                    </h3>
+
+                    <!-- Description -->
+                    <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3 leading-relaxed">
+                        ${safeDesc}
+                    </p>
+
+                    <!-- Course Tags -->
+                    <div class="flex flex-wrap gap-1 mb-4">
+                        ${safeTags}
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="pt-3 border-t border-slate-100 dark:border-slate-700/60 flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-1.5">
+                        <span class="font-semibold text-slate-700 dark:text-slate-200">${safeAuthor}</span>
+                        ${res.role === 'Faculty' ? `<span title="Faculty Highlight" class="text-emerald-500"><i class="fa-solid fa-circle-check"></i></span>` : ''}
+                        <span class="text-[10px] px-1.5 py-0.5 rounded ${res.role === 'Faculty' ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold' : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300'}">${safeRole}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-amber-500 font-semibold"><i class="fa-solid fa-star text-[10px]"></i> ${Number(res.rating).toFixed(1)}</span>
+                        <button type="button" onclick="openPreviewModal('${safeId}')" class="text-brand-600 dark:text-brand-400 font-semibold hover:underline flex items-center gap-1">
+                            View
+                        </button>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        // Bookmark Toggle Handler
+        function toggleBookmark(e, id) {
+            if (e) e.stopPropagation();
+            if (bookmarks.includes(id)) {
+                bookmarks = bookmarks.filter(b => b !== id);
+                showToast('Removed from bookmarks');
+            } else {
+                bookmarks.push(id);
+                showToast('Saved to bookmarks!');
+            }
+            saveState();
+            renderResources();
+            renderBookmarks();
+        }
+
+        function updateBookmarkBadge() {
+            const validCount = resources.filter(res => bookmarks.includes(res.id)).length;
+            document.getElementById('navBookmarkCount').innerText = validCount;
+            const mobileCount = document.getElementById('mobileBookmarkCount');
+            if (mobileCount) mobileCount.innerText = validCount;
+        }
+
+        function updatePendingBadge() {
+            const pendingCount = resources.filter(r => r.status === 'Pending').length;
+            const badge = document.getElementById('navPendingBadge');
+            const mobileBadge = document.getElementById('mobilePendingBadge');
+
+            if (pendingCount > 0) {
+                badge.innerText = pendingCount;
+                badge.classList.remove('hidden');
+                badge.classList.add('flex');
+                if (mobileBadge) {
+                    mobileBadge.innerText = pendingCount;
+                    mobileBadge.classList.remove('hidden');
+                }
+            } else {
+                badge.classList.add('hidden');
+                badge.classList.remove('flex');
+                if (mobileBadge) {
+                    mobileBadge.classList.add('hidden');
+                }
+            }
+        }
+
+        // Render Bookmarks Grid
+        function renderBookmarks() {
+            const grid = document.getElementById('bookmarkGrid');
+            const emptyState = document.getElementById('bookmarkEmptyState');
+            grid.innerHTML = '';
+
+            const bookmarkedList = resources.filter(res => bookmarks.includes(res.id));
+
+            if (bookmarkedList.length === 0) {
+                grid.classList.add('hidden');
+                emptyState.classList.remove('hidden');
+                emptyState.classList.add('flex');
+                return;
+            }
+
+            grid.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+            emptyState.classList.remove('flex');
+
+            bookmarkedList.forEach(res => {
+                grid.appendChild(createResourceCard(res));
+            });
+        }
+
+        // Tag Filter Chips Handler
+        function filterTag(tag, el) {
+            selectedTag = tag;
+            document.querySelectorAll('.tag-chip').forEach(chip => {
+                chip.className = 'tag-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600';
+            });
+            if (el) {
+                el.className = 'tag-chip active-chip px-3 py-1 rounded-full whitespace-nowrap font-medium transition bg-brand-600 text-white';
+            }
+            renderResources();
+        }
+
+        // Search Handlers
+        function handleSearch() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (input.value.length > 0) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+            renderResources();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderResources();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            document.getElementById('typeFilter').value = 'ALL';
+            document.getElementById('sortFilter').value = 'popular';
+            filterTag('ALL', document.getElementById('tagAllBtn'));
+        }
+
+        // Form Submission
+        function handleResourceSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('formTitle').value.trim();
+            const type = document.getElementById('formType').value;
+            const selectTags = Array.from(document.getElementById('formTags').selectedOptions).map(opt => opt.value);
+            const rawUrl = document.getElementById('formUrl').value.trim();
+            const url = sanitizeUrl(rawUrl);
+            const author = document.getElementById('formAuthor').value.trim();
+            const role = document.getElementById('formRole').value;
+            const description = document.getElementById('formDesc').value.trim();
+
+            if (url === '#') {
+                showToast('Please enter a valid http:// or https:// URL.');
+                return;
+            }
+
+            const newRes = {
+                id: 'res-' + Date.now(),
+                title,
+                type,
+                tags: selectTags.length > 0 ? selectTags : ['CSE326'],
+                url,
+                author,
+                role,
+                description,
+                rating: 5.0,
+                ratingCount: 1,
+                downloads: 0,
+                status: role === 'Faculty' ? 'Approved' : 'Pending', // Faculty uploads auto-approved
+                flags: 0,
+                comments: [],
+                createdAt: new Date().toISOString()
+            };
+
+            resources.unshift(newRes);
+            saveState();
+            document.getElementById('uploadForm').reset();
+
+            if (role === 'Faculty') {
+                showToast('Resource published immediately (Faculty Approval)');
+                switchTab('browse');
+            } else {
+                showToast('Resource submitted for Faculty Moderation!');
+                switchTab('moderation');
+            }
+        }
+
+        // Preview Modal Controls & Actions
+        function renderModalStars(resId) {
+            const userStar = Number(userRatings[resId]) || 0;
+            const stars = document.querySelectorAll('#interactiveStars i[data-star]');
+            stars.forEach(star => {
+                const starVal = Number(star.getAttribute('data-star'));
+                if (starVal <= userStar) {
+                    star.classList.add('text-amber-400');
+                } else {
+                    star.classList.remove('text-amber-400');
+                }
+            });
+            document.getElementById('userRatingHint').innerText = userStar > 0
+                ? `Rated ${userStar} star(s)!`
+                : '(Click to rate)';
+        }
+
+        function openPreviewModal(id) {
+            const res = resources.find(r => r.id === id);
+            if (!res) return;
+            activeModalResId = id;
+
+            document.getElementById('modalTitle').innerText = res.title;
+            document.getElementById('modalTypeBadge').innerText = res.type;
+            document.getElementById('modalAuthorBadge').innerText = res.role;
+            document.getElementById('modalAuthor').innerText = res.author;
+            document.getElementById('modalRating').innerText = `★ ${Number(res.rating).toFixed(1)} (${res.ratingCount} ratings)`;
+            document.getElementById('modalDownloads').innerText = res.downloads;
+            document.getElementById('modalDesc').innerText = res.description;
+            document.getElementById('modalTypeIcon').innerHTML = `<i class="fa-solid ${getTypeIcon(res.type)}"></i>`;
+
+            const facultyVerified = document.getElementById('modalFacultyVerified');
+            if (res.role === 'Faculty') {
+                facultyVerified.classList.remove('hidden');
+            } else {
+                facultyVerified.classList.add('hidden');
+            }
+
+            // Tags
+            document.getElementById('modalTags').innerHTML = (Array.isArray(res.tags) ? res.tags : [])
+                .map(t => `<span class="bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg text-xs font-medium">#${escapeHtml(t)}</span>`)
+                .join('');
+
+            // Download Link
+            const dlBtn = document.getElementById('modalDownloadBtn');
+            dlBtn.href = sanitizeUrl(res.url);
+
+            // Bookmark Button State
+            const bmBtn = document.getElementById('modalBookmarkBtn');
+            const isBookmarked = bookmarks.includes(res.id);
+            bmBtn.innerHTML = `<i class="${isBookmarked ? 'fa-solid text-amber-500' : 'fa-regular'} fa-bookmark"></i> ${isBookmarked ? 'Saved' : 'Bookmark'}`;
+
+            // Interactive Rating Stars
+            renderModalStars(res.id);
+
+            // Comments
+            renderModalComments(res);
+
+            // Flags count
+            document.getElementById('modalFlags').innerText = res.flags > 0 ? `${res.flags} flag(s)` : '';
+
+            showModal('previewModal');
+        }
+
+        function toggleModalBookmark() {
+            if (activeModalResId) {
+                toggleBookmark(null, activeModalResId);
+                const isBookmarked = bookmarks.includes(activeModalResId);
+                document.getElementById('modalBookmarkBtn').innerHTML = `<i class="${isBookmarked ? 'fa-solid text-amber-500' : 'fa-regular'} fa-bookmark"></i> ${isBookmarked ? 'Saved' : 'Bookmark'}`;
+            }
+        }
+
+        function incrementDownload() {
+            if (activeModalResId) {
+                const res = resources.find(r => r.id === activeModalResId);
+                if (res) {
+                    res.downloads += 1;
+                    document.getElementById('modalDownloads').innerText = res.downloads;
+                    saveState();
+                    renderResources();
+                }
+            }
+        }
+
+        function rateResource(value) {
+            if (activeModalResId) {
+                const res = resources.find(r => r.id === activeModalResId);
+                if (res) {
+                    const prevUserRating = Number(userRatings[activeModalResId]) || 0;
+                    if (prevUserRating > 0) {
+                        const totalSum = res.rating * res.ratingCount - prevUserRating + value;
+                        res.rating = Number((totalSum / res.ratingCount).toFixed(1));
+                    } else {
+                        res.ratingCount += 1;
+                        res.rating = Number(((res.rating * (res.ratingCount - 1) + value) / res.ratingCount).toFixed(1));
+                    }
+                    userRatings[activeModalResId] = value;
+                    saveState();
+                    renderResources();
+                    renderBookmarks();
+                    document.getElementById('modalRating').innerText = `★ ${Number(res.rating).toFixed(1)} (${res.ratingCount} ratings)`;
+                    renderModalStars(activeModalResId);
+                    showToast('Thank you for your rating!');
+                }
+            }
+        }
+
+        function renderModalComments(res) {
+            const feed = document.getElementById('modalCommentsFeed');
+            const comments = Array.isArray(res.comments) ? res.comments : [];
+            document.getElementById('modalCommentCount').innerText = comments.length;
+            feed.innerHTML = '';
+
+            if (comments.length === 0) {
+                feed.innerHTML = `<p class="text-slate-400 italic text-xs py-1">No comments yet. Be the first to start a discussion!</p>`;
+                return;
+            }
+
+            comments.forEach(c => {
+                const item = document.createElement('div');
+                item.className = 'bg-slate-50 dark:bg-slate-700/40 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700 text-xs';
+                item.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-semibold text-slate-800 dark:text-slate-200">${escapeHtml(c.author)} <span class="text-[10px] font-normal text-slate-400">(${escapeHtml(c.role)})</span></span>
+                    </div>
+                    <p class="text-slate-600 dark:text-slate-300">${escapeHtml(c.text)}</p>
+                `;
+                feed.appendChild(item);
+            });
+        }
+
+        function postComment() {
+            const input = document.getElementById('modalCommentInput');
+            const text = input.value.trim();
+            if (text && activeModalResId) {
+                const res = resources.find(r => r.id === activeModalResId);
+                if (res) {
+                    if (!Array.isArray(res.comments)) res.comments = [];
+                    res.comments.push({
+                        author: currentUserRole === 'Faculty' ? 'Dr. Faculty Member' : 'Student Reviewer',
+                        role: currentUserRole,
+                        text: text
+                    });
+                    saveState();
+                    renderModalComments(res);
+                    input.value = '';
+                    showToast('Comment posted!');
+                }
+            }
+        }
+
+        function flagCurrentResource() {
+            if (activeModalResId) {
+                const res = resources.find(r => r.id === activeModalResId);
+                if (res) {
+                    res.flags += 1;
+                    saveState();
+                    document.getElementById('modalFlags').innerText = `${res.flags} flag(s)`;
+                    renderModerationQueue();
+                    showToast('Item reported to faculty moderators.');
+                }
+            }
+        }
+
+        // Moderation Queue Rendering & Controls
+        function renderModerationQueue() {
+            const pendingGrid = document.getElementById('pendingGrid');
+            const flaggedGrid = document.getElementById('flaggedGrid');
+            pendingGrid.innerHTML = '';
+            flaggedGrid.innerHTML = '';
+
+            const pendingList = resources.filter(r => r.status === 'Pending');
+            const flaggedList = resources.filter(r => r.flags > 0);
+
+            // Pending Queue Render
+            if (pendingList.length === 0) {
+                pendingGrid.innerHTML = `<div class="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs text-slate-400 italic">No pending submissions awaiting approval.</div>`;
+            } else {
+                pendingList.forEach(res => {
+                    const safeId = escapeHtml(res.id);
+                    const item = document.createElement('div');
+                    item.className = 'bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs';
+                    item.innerHTML = `
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <button type="button" onclick="openPreviewModal('${safeId}')" class="font-bold text-slate-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 text-left">${escapeHtml(res.title)}</button>
+                                <span class="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-semibold text-[10px]">${escapeHtml(res.type)}</span>
+                            </div>
+                            <p class="text-slate-500">Submitted by: <strong class="text-slate-700 dark:text-slate-300">${escapeHtml(res.author)} (${escapeHtml(res.role)})</strong></p>
+                        </div>
+                        <div class="flex items-center gap-2 self-end sm:self-center">
+                            ${currentUserRole === 'Faculty' ? `
+                                <button type="button" onclick="approveResource('${safeId}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-check"></i> Approve
+                                </button>
+                                <button type="button" onclick="deleteResource('${safeId}')" class="bg-rose-500 hover:bg-rose-600 text-white px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1">
+                                    <i class="fa-solid fa-trash"></i> Reject
+                                </button>
+                            ` : `<span class="text-amber-500 italic">Faculty Admin Action Required</span>`}
+                        </div>
+                    `;
+                    pendingGrid.appendChild(item);
+                });
+            }
+
+            // Flagged Queue Render
+            if (flaggedList.length === 0) {
+                flaggedGrid.innerHTML = `<div class="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs text-slate-400 italic">No flagged items reported.</div>`;
+            } else {
+                flaggedList.forEach(res => {
+                    const safeId = escapeHtml(res.id);
+                    const safeHref = escapeHtml(sanitizeUrl(res.url));
+                    const item = document.createElement('div');
+                    item.className = 'bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs';
+                    item.innerHTML = `
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <button type="button" onclick="openPreviewModal('${safeId}')" class="font-bold text-slate-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-400 text-left">${escapeHtml(res.title)}</button>
+                                <span class="px-2 py-0.5 rounded bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-300 font-bold text-[10px]">${res.flags} Flag(s)</span>
+                            </div>
+                            <p class="text-slate-500">Resource URL: <a href="${safeHref}" target="_blank" rel="noopener noreferrer" class="text-brand-600 dark:text-brand-400 underline break-all">${escapeHtml(res.url)}</a></p>
+                        </div>
+                        <div class="flex items-center gap-2 self-end sm:self-center">
+                            ${currentUserRole === 'Faculty' ? `
+                                <button type="button" onclick="clearFlags('${safeId}')" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-lg font-semibold">
+                                    Dismiss Flags
+                                </button>
+                                <button type="button" onclick="deleteResource('${safeId}')" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-1.5 rounded-lg font-semibold">
+                                    Remove Resource
+                                </button>
+                            ` : `<span class="text-amber-500 italic">Faculty Admin Action Required</span>`}
+                        </div>
+                    `;
+                    flaggedGrid.appendChild(item);
+                });
+            }
+        }
+
+        function approveResource(id) {
+            if (currentUserRole !== 'Faculty') return;
+            const res = resources.find(r => r.id === id);
+            if (res) {
+                res.status = 'Approved';
+                saveState();
+                renderResources();
+                renderModerationQueue();
+                showToast('Resource approved and published!');
+            }
+        }
+
+        function deleteResource(id) {
+            if (currentUserRole !== 'Faculty') return;
+            resources = resources.filter(r => r.id !== id);
+            bookmarks = bookmarks.filter(b => b !== id);
+            delete userRatings[id];
+            saveState();
+            renderResources();
+            renderBookmarks();
+            renderModerationQueue();
+            showToast('Resource removed.');
+        }
+
+        function clearFlags(id) {
+            if (currentUserRole !== 'Faculty') return;
+            const res = resources.find(r => r.id === id);
+            if (res) {
+                res.flags = 0;
+                saveState();
+                renderModerationQueue();
+                showToast('Flags dismissed.');
+            }
+        }
+
+        // Modal Utilities
+        function showModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.firstElementChild.classList.remove('scale-95');
+                modal.firstElementChild.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('opacity-0');
+            modal.firstElementChild.classList.remove('scale-100');
+            modal.firstElementChild.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        // Toast Helper
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 2500);
+        }
+    </script>
+</body>
+
+</html>
